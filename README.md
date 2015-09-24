@@ -28,5 +28,5 @@ leonardo_castro@ciencias.unam.mx
 
 #### About images in chapter 2
 
-At this moments I don't have the final figures we will use on the final script. Meanwhile I will use images from Sven Maerivoet's doctoral tesis.
+At this moments I don't have the figures I will use on the final script. Meanwhile the images showed are from [Sven Maerivoet's doctoral tesis](http://www.maerivoet.org/index.php?page=traffic-dissertation). Those images are perfect to illustrate the ideas described in chapter 2 and will be replaced when the right proper figures will be made. 
 
