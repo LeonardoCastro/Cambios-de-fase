@@ -57,36 +57,36 @@ end
 ############################ Funciones Auxiliares ####################################
 
 function Celda_Vacia!(v::Vehiculo)
-    v.velocidad = Int8(-1)
-    v.tipo = Int8(-1)
-    v.cambio = Int8(0)
+    v.velocidad = int8(-1)
+    v.tipo = int8(-1)
+    v.cambio = int8(0)
     v.num = 0
 end
 
 function Obstaculo!(v::Vehiculo)
-    v.velocidad = Int8(-1)
-    v.tipo = Int8(-2)
-    v.cambio = Int8(0)
-    v.num = Int8(0)
+    v.velocidad = int8(-1)
+    v.tipo = int8(-2)
+    v.cambio = int8(0)
+    v.num = int8(0)
 end
 
 function Cambiar_Vehiculo!(v, vel, pos, tipo, cambio, num)
-    v.velocidad = Int8(vel)
+    v.velocidad = int8(vel)
     v.posicion = pos
-    v.tipo = Int8(tipo)
-    v.cambio = Int8(cambio)
+    v.tipo = int8(tipo)
+    v.cambio = int8(cambio)
     v.num = num
 end
 
 ## Hay que tener cuidado con Insertar_Carro! para solo llamarla en celdas vacias
 
-function Insertar_Carro!(carretera, num::Int64, p::Float64, vmax::Array{Int8, 1} = Int8[3, 5], frontera_izq::Int8 = Int8(5) )
+function Insertar_Carro!(carretera, num::Int64, p::Float64, vmax::Array{Int8, 1} = Int8[3, 5], frontera_izq::Int8 = int8(5) )
     #frontera_izq = 5
     #vmax = [3, 5]
 
-    lim = frontera_izq + Int8(1)
+    lim = frontera_izq + int8(1)
     while carretera[lim].tipo == -1 && lim < (frontera_izq+vmax[2])
-        lim += Int8(1)
+        lim += int8(1)
     end
     v_nueva = ( rand() <= p ? vmax[1] : vmax[2] )
     pos_nueva = min( lim - vmax[2], v_nueva)
@@ -123,7 +123,7 @@ function Vehiculo_Adelante( posicion, Carretera, N)
     i
 end
 
-function Vehiculo_Atras( posicion, Carretera, N, frontera_izq::Int8 = Int8(5) )
+function Vehiculo_Atras( posicion, Carretera, N, frontera_izq::Int8 = int8(5) )
     #frontera_izq = 5
 
     i = posicion - 1
@@ -182,7 +182,7 @@ function distancia_seguridad(i, Carretera1, N, delta, alfa::Float32 = 0.75f0)
 
     pvfo = Vehiculo_Adelante(i, Carretera1, N)
     d_ifo = (pvfo < N ? (pvfo-i-1) : delta*5 ) # 5 = vmax[2]
-    dfo = d_ifo + Int8( floor( (1.-alfa) * Carretera1[pvfo].velocidad + 0.5) )
+    dfo = d_ifo + int8( floor( (1.-alfa) * Carretera1[pvfo].velocidad + 0.5) )
     alfa = 0; pvfo = 0; d_ifo = 0
     return dfo
 end
@@ -217,7 +217,7 @@ function CambioIzq_Der!(Ck, Ckmenos1, k)
     for v in Ck.carretera[end:-1:9]
         if (v.tipo == 1 || v.tipo == 2) && v.cambio == 0
 
-            delta = v.tipo == 2 ? Int8(3) : Int8(1)
+            delta = v.tipo == 2 ? int8(3) : int8(1)
             l = v.velocidad
             dfo = distancia_seguridad(v.posicion, Ckmenos1.carretera, Ckmenos1.N, delta)
             dfs = distancia_seguridad(v.posicion, Ck.carretera, Ck.N, delta)
@@ -240,11 +240,11 @@ function CambioDer_Izq!(Ck, Ckmas1, k)
         #if (v.tipo == 2 || (v.tipo == 1 && k < 2)) && v.cambio == 0
         if v.tipo == 2 && v.cambio == 0
             l = v.velocidad
-            dfs = distancia_seguridad(v.posicion, Ck.carretera, Ck.N, Int8(1))
+            dfs = distancia_seguridad(v.posicion, Ck.carretera, Ck.N, int8(1))
 
             if dfs < l
                 if Ckmas1.carretera[v.posicion].tipo == -1
-                    dfo = distancia_seguridad(v.posicion, Ckmas1.carretera, Ckmas1.N, Int8(1))
+                    dfo = distancia_seguridad(v.posicion, Ckmas1.carretera, Ckmas1.N, int8(1))
                     if dfo >= l
                         Cambiar_Carril!(Ck.carretera[v.posicion], Ck.cuenta, Ckmas1)
                     end
@@ -285,71 +285,63 @@ function AcelerarRuido(carretera, vmax::Array{Int8, 1} = Int8[3, 5], R::Float32 
     end
 end
 
-function DesacelerarMover(C, alfa::Float32 = 0.75f0, frontera_izq::Int8 = Int8(5))
-    #alfa = 0.75::Float64
-    #frontera_izq = 5::Int64
+function DesacelerarMover(C::Carretera1D)
+
+    alfa = 0.75f0
+    frontera_izq = int8(5)
+
     i = Pos_izq(C.carretera)
     i_1 = ( i > 1 ? Pos_izq(C.carretera[1:i-1]) : 0 )
 
-    # Este if es para el primer paso en el que solo hay un coche. Este no se desacelera y unicamente se mueve
-    #if i_1 == 0 && i > 0
-    #    pos_sig = C.carretera[i].velocidad + C.carretera[i].posicion
-    #    if C.carretera[i].posicion != pos_sig
-
-    #        if pos_sig <= C.N
-    #            Cambiar_Vehiculo!(C.carretera[pos_sig], C.carretera[i].velocidad, pos_sig, C.carretera[i].tipo, 0, C.carretera[i].num)
-
-    #            if C.carretera[i].posicion <= frontera_izq && pos_sig > frontera_izq
-    #                C.cuenta += 1
-    #            end
-    #        else
-    #            C.cuenta -= 1
-    #        end
-
-    #        Celda_Vacia!(C.carretera[i])
-    #    end
-    #end
-
     # Este while es para los pasos siguientes
     while (i > 0)
-        #if (C.carretera[i] == 1 || C.carretera[i] == 2) && (C.carretera[i_1] == 1 ||C.carretera[i_1] == 2 )
+
         if i_1 != 0
           distancia = i - i_1 - 1
 
           # Desaceleramos el automovil i-1 a partir del automovil i
           velocidad_estimada = round(Int8, floor( C.carretera[i].velocidad * (1.0 - alfa) + 0.5 ) )
           Cambiar_Vehiculo!(C.carretera[i_1], min( (velocidad_estimada+distancia), C.carretera[i_1].velocidad),
-                              C.carretera[i_1].posicion, C.carretera[i_1].tipo, C.carretera[i_1].cambio, C.carretera[i_1].num)
+                              C.carretera[i_1].posicion, C.carretera[i_1].tipo, C.carretera[i_1].cambio,
+                                C.carretera[i_1].num)
         end
+
         # Movemos el automovil i
 
         pos_sig = C.carretera[i].velocidad + C.carretera[i].posicion
-        if C.carretera[i].posicion != pos_sig && C.carretera[pos_sig].tipo == -1
+        if C.carretera[i].posicion != pos_sig #&& C.carretera[pos_sig].tipo == -1
 
-            if pos_sig <= C.N
-                Cambiar_Vehiculo!(C.carretera[pos_sig], C.carretera[i].velocidad, pos_sig, C.carretera[i].tipo, 0, C.carretera[i].num)
+            if pos_sig > C.N
+                Celda_Vacia!(C.carretera[i])
+                C.cuenta -= 1
+            end
+
+            if pos_sig <= C.N && C.carretera[pos_sig].tipo == -1
 
                 if C.carretera[i].posicion <= frontera_izq && pos_sig > frontera_izq
                     C.cuenta += 1
                 end
-            else
-                C.cuenta -= 1
+
+                Cambiar_Vehiculo!(C.carretera[pos_sig], C.carretera[i].velocidad, pos_sig, C.carretera[i].tipo, 0
+                                    , C.carretera[i].num)
+
+                Celda_Vacia!(C.carretera[i])
+            elseif pos_sig <= C.N && C.carretera[pos_sig].tipo == -2
+                while C.carretera[pos_sig].tipo == -2
+                   pos_sig -= 1
+                end
+               Cambiar_Vehiculo!(C.carretera[pos_sig], C.carretera[i].velocidad, pos_sig, C.carretera[i].tipo, 0,
+                                C.carretera[i].num)
+               Celda_Vacia!(C.carretera[i])
             end
-
-            Celda_Vacia!(C.carretera[i])
-        elseif C.carretera[pos_sig].tipo == -2
-           while C.carretera[pos_sig].tipo == -2
-               pos_sig -= 1
-           end
-           Cambiar_Vehiculo!(C.carretera[pos_sig], C.carretera[i].velocidad, pos_sig, C.carretera[i].tipo, 0, C.carretera[i].num)
-           Celda_Vacia!(C.carretera[i])
-       end
-
+        end
         # Reindexamos el automovil i-1 como el automovil i
-        #end
+
         i = i_1
         i_1 = ( i > 1 ? Pos_izq(C.carretera[1:i-1]) : 0 )
     end
+
+    alfa = frontera_izq = i = i_1 = 0
 end
 
 

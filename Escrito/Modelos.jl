@@ -4,14 +4,10 @@
 
 module Modelos
 
-using carretera1D2
+using carretera2D
 using PyPlot
 
-export Modelo_NaSch, Modelo_Anticipacion
-
-##########################################################################################
-########################### Simulación NaSch sin anticipación ############################
-##########################################################################################
+export Modelo_NaSch, Modelo_Anticipacion, Modelo_2D
 
 ########################### Funciones Autómatas Celulares ################################
 
@@ -138,8 +134,13 @@ function Espacio_Tiempo!(X, carretera, t)
     end
 end
 
+##########################################################################################
+########################### Simulación NaSch sin anticipación ############################
+##########################################################################################
 
-function Modelo_NaSch( R::Float64, N::Int64, Tf::Int64 ; xlim=(0,Tf), ylim=(0,N))
+
+function Modelo_NaSch( R::Float64, N::Int64, Tf::Int64 ;
+                                   xlim = (1./3600.,float64(Tf)/3600.), ylim = (0.,float64(N)*0.0075))
 
   C = Carretera1D(N)
   #Secciones = [1:div(N,20)+1:N]
@@ -156,7 +157,7 @@ function Modelo_NaSch( R::Float64, N::Int64, Tf::Int64 ; xlim=(0,Tf), ylim=(0,N)
       Espacio_Tiempo!(X, C.carretera, t+1)
     #end
 
-    Insertar_Carro!(C.carretera, 0., t+1)
+    Insertar_Carro!(C.carretera, t+1, 0.)
 
     AcelerarRuido_NaSch(C.carretera, R)
     DesacelerarMover_NaSch(C, 1.0)
@@ -171,19 +172,20 @@ function Modelo_NaSch( R::Float64, N::Int64, Tf::Int64 ; xlim=(0,Tf), ylim=(0,N)
   #PyPlot.plot(Tf, X)
 
   for v = 2:size(X)[1]
-      PyPlot.plot([1:Tf], [x for x in X[v, 1:end-1]])
+        PyPlot.plot(linspace(1/3600, Tf/3600, Tf), [x*0.0075 for x in X[v, 1:end-1]])
   end
   PyPlot.xlim(xlim[1], xlim[2])
   PyPlot.ylim(ylim[1], ylim[2])
-  PyPlot.xlabel("tiempo [segundos]")
-  PyPlot.ylabel("X [celdas]")
+  PyPlot.xlabel("Tiempo [horas]")
+  PyPlot.ylabel("Distancia [km]")
 end
 
 ##########################################################################################
 ########################### Simulación NaSch con anticipación ############################
 ##########################################################################################
 
-function Modelo_Anticipacion( R::Float64, alpha::Float64, N::Int64, Tf::Int64 ; xlim=(0,Tf), ylim=(0,N))
+function Modelo_Anticipacion( R::Float64, alpha::Float64, N::Int64, Tf::Int64 ;
+                                   xlim = (1./3600.,float64(Tf)/3600.), ylim = (0.,float64(N)*0.0075))
 
   C = Carretera1D(N)
   #Secciones = [1:div(N,20)+1:N]
@@ -200,7 +202,7 @@ function Modelo_Anticipacion( R::Float64, alpha::Float64, N::Int64, Tf::Int64 ; 
       Espacio_Tiempo!(X, C.carretera, t+1)
     #end
 
-    Insertar_Carro!(C.carretera, 0., t+1)
+    Insertar_Carro!(C.carretera, t+1, 0.)
 
     AcelerarRuido_NaSch(C.carretera, R)
     DesacelerarMover_NaSch(C, alpha)
@@ -215,13 +217,93 @@ function Modelo_Anticipacion( R::Float64, alpha::Float64, N::Int64, Tf::Int64 ; 
   #PyPlot.plot(Tf, X)
 
   for v = 2:size(X)[1]
-      PyPlot.plot([1:Tf], [x for x in X[v, 1:end-1]])
+        PyPlot.plot(linspace(1/3600, Tf/3600, Tf), [x*0.0075 for x in X[v, 1:end-1]])
   end
   PyPlot.xlim(xlim[1], xlim[2])
   PyPlot.ylim(ylim[1], ylim[2])
-  PyPlot.xlabel("tiempo [segundos]")
-  PyPlot.ylabel("X [celdas]")
+  PyPlot.xlabel("Tiempo [horas]")
+  PyPlot.ylabel("Distancia [km]")
 end
 
+##########################################################################################
+################################ Simulación multi-carril #################################
+##########################################################################################
 
+function Modelo_2D( xin, xout, p, pin, pout, Tf::Int64 = 3600, N::Int64 = 200;
+                                        xlim1 = (1./3600.,float64(Tf)/3600.), xlim2 = (1./3600.,float64(Tf)/3600.),
+                                        ylim1 = (0.,float64(N)*0.0075), ylim2 = (0.,float64(N)*0.0075) )
+
+  #T = 12; Tf = 3600; N = 3000
+
+    Ca = Carretera2D(2, N)
+    C = Ca.carretera
+  #Secciones = [1:300:N]
+  #S = length(Secciones)
+  #A = fld(Tf, T)+1
+  X1 = zeros(Tf, Tf+1)
+  X2 = zeros(Tf, Tf+1)
+  #flujo_local = zeros(S, A)
+  #densidad_local = zeros(S, A)
+  #velocidad_local_promedio = zeros(S, A)
+
+  #A2 = fld(Tf, T2)+1
+  #flujo_local2 = zeros(S, A2)
+  #densidad_local2 = zeros(S, A2)
+  #velocidad_local_promedio2 = zeros(S, A2)
+
+  for t = 0:Tf-1
+
+    #if t > N
+        Espacio_Tiempo!(X1, C[1].carretera, t+1)
+        Espacio_Tiempo!(X2, C[2].carretera, t+1)
+    #end
+
+        CambioIzq_Der!(C[2], C[1], 2)
+        CambioDer_Izq!(C[1], C[2], 1)
+
+        Insertar_Carro!(C[1].carretera, t+1, p)
+        Insertar_Carro!(C[2].carretera, t+1, p)
+
+        Rampa!(1, xin, 20, pin, p, C[1], Tf)
+        Rampa!(0, xout, 20, pout, p, C[1], Tf)
+
+        AcelerarRuido(C[1].carretera)
+        DesacelerarMover(C[1])
+
+        AcelerarRuido(C[2].carretera)
+        DesacelerarMover(C[2])
+
+    #if t > N
+            #Medir_NaSch(C, div(t+1, T)+1, Secciones, T, flujo_local, densidad_local, velocidad_local_promedio)
+            #Medir_NaSch(C, div(t+1, T2)+1, Secciones, T2, flujo_local2, densidad_local2,
+                        #velocidad_local_promedio2)
+    #end
+  end
+
+
+    subplot(211)
+
+    #figure(figsize=(13,13))
+    for v = 2:size(X1)[1]
+        PyPlot.plot(linspace(1/3600, Tf/3600, Tf), [x*0.0075 for x in X1[v, 1:end-1]])
+    end
+
+    title("Carril 1")
+    ylabel("Distancia [km]")
+    xlim(xlim1[1], xlim1[2])
+    ylim(ylim1[1], ylim1[2])
+
+    subplot(212)
+
+    #figure(figsize=(13, 13))
+    for v = 2:size(X2)[1]
+        PyPlot.plot(linspace(1/3600, Tf/3600, Tf), [x*0.0075 for x in X2[v, 1:end-1]])
+    end
+
+    title("Carril 2")
+    ylabel("Distancia [km]")
+    xlabel("Tiempo [horas]")
+    xlim(xlim2[1], xlim2[2])
+    ylim(ylim2[1], ylim2[2])
+end
 end
