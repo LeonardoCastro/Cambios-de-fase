@@ -24,7 +24,7 @@ Un índice más detallado puede ser encontrado [aquí](https://github.com/Leonar
 
 La programación de todo este trabajó se realizó en **Julia**. 
 
-Toda los modulos escritos y que fueron utilizados se encuentran a continuación. En estos están escritas todas las funciones y tipos usados.
+Todos los modulos (paquetes) escritos y que fueron utilizados se encuentran a continuación. En estos están escritas todas las funciones y tipos usados.
 
 | Módulo              | Descripción        |
 ---|:--
