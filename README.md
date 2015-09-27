@@ -28,8 +28,8 @@ Toda los modulos escritos y que fueron utilizados se encuentran a continuación.
 
 | Módulo              | Descripción        |
 ---|:--
-carretera1D2 | Funciones y tipos para carretera con 1 carril
-carretera2D | Funciones y tipos para carretera con 2 carriles
+[carretera1D2](https://github.com/LeonardoCastro/Tesis-Cambios-de-fase/blob/master/Escrito/carretera1D2.jl) | Funciones y tipos para carretera con 1 carril
+[carretera2D](https://github.com/LeonardoCastro/Tesis-Cambios-de-fase/blob/master/Escrito/carretera2D.jl) | Funciones y tipos para carretera con 2 carriles
 [Modelos](https://github.com/LeonardoCastro/Tesis-Cambios-de-fase/blob/master/Escrito/Modelos.jl) | Funciones para las simulaciones en el capítulo 3
 
 
