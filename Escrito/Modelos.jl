@@ -125,11 +125,12 @@ function Medir_NaSch(C, t, Secciones, T, flujo_local, densidad_local, velocidad_
     end
 end
 
-function Espacio_Tiempo!(X, carretera, t)
+function ET!(X, T, carretera, t)
 
     for v in carretera
         if v.tipo == 1 || v.tipo == 2
-            X[v.num, t] = v.posicion
+            push!(X[v.num], v.posicion)
+            push!(T[v.num], t)
         end
     end
 end
@@ -146,7 +147,13 @@ function Modelo_NaSch( R::Float64, N::Int64, Tf::Int64 ;
   #Secciones = [1:div(N,20)+1:N]
   #S = length(Secciones)
   #A = fld(Tf-N, T)+1
-  X = zeros(Tf, Tf+1)
+  X = Any[]
+  T = Any[]
+
+  for i = 1:Tf
+    push!(X, Int64[])
+    push!(T, Int64[])
+  end
   #flujo_local = zeros(S, A)
   #densidad_local = zeros(S, A)
   #velocidad_local_promedio = zeros(S, A)
@@ -154,7 +161,7 @@ function Modelo_NaSch( R::Float64, N::Int64, Tf::Int64 ;
   for t = 0:Tf-1
 
     #if t > N
-      Espacio_Tiempo!(X, C.carretera, t+1)
+      ET!(X, T, C.carretera, t+1)
     #end
 
     Insertar_Carro!(C.carretera, t+1, 0.)
@@ -171,9 +178,9 @@ function Modelo_NaSch( R::Float64, N::Int64, Tf::Int64 ;
   #PyPlot.plot(densidad_local(s,:), flujo_local(s, :))
   #PyPlot.plot(Tf, X)
 
-  for v = 2:size(X)[1]
-        PyPlot.plot(linspace(1/3600, Tf/3600, Tf), [x*0.0075 for x in X[v, 1:end-1]])
-  end
+    for v = 2:length(X)
+        PyPlot.plot([t/3600. for t in T[v]], [x*0.0075 for x in X[v]])
+    end
   PyPlot.xlim(xlim[1], xlim[2])
   PyPlot.ylim(ylim[1], ylim[2])
   PyPlot.xlabel("Tiempo [horas]")
@@ -191,7 +198,13 @@ function Modelo_Anticipacion( R::Float64, alpha::Float64, N::Int64, Tf::Int64 ;
   #Secciones = [1:div(N,20)+1:N]
   #S = length(Secciones)
   #A = fld(Tf-N, T)+1
-  X = zeros(Tf, Tf+1)
+  X = Any[]
+  T = Any[]
+
+  for i = 1:Tf
+    push!(X, Int64[])
+    push!(T, Int64[])
+  end
   #flujo_local = zeros(S, A)
   #densidad_local = zeros(S, A)
   #velocidad_local_promedio = zeros(S, A)
@@ -199,7 +212,7 @@ function Modelo_Anticipacion( R::Float64, alpha::Float64, N::Int64, Tf::Int64 ;
   for t = 0:Tf-1
 
     #if t > N
-      Espacio_Tiempo!(X, C.carretera, t+1)
+      ET!(X, T, C.carretera, t+1)
     #end
 
     Insertar_Carro!(C.carretera, t+1, 0.)
@@ -216,9 +229,9 @@ function Modelo_Anticipacion( R::Float64, alpha::Float64, N::Int64, Tf::Int64 ;
   #PyPlot.plot(densidad_local(s,:), flujo_local(s, :))
   #PyPlot.plot(Tf, X)
 
-  for v = 2:size(X)[1]
-        PyPlot.plot(linspace(1/3600, Tf/3600, Tf), [x*0.0075 for x in X[v, 1:end-1]])
-  end
+    for v = 2:length(X)
+        PyPlot.plot([t/3600. for t in T[v]], [x*0.0075 for x in X[v]])
+    end
   PyPlot.xlim(xlim[1], xlim[2])
   PyPlot.ylim(ylim[1], ylim[2])
   PyPlot.xlabel("Tiempo [horas]")
@@ -240,8 +253,17 @@ function Modelo_2D( xin, xout, p, pin, pout, Tf::Int64 = 3600, N::Int64 = 200;
   #Secciones = [1:300:N]
   #S = length(Secciones)
   #A = fld(Tf, T)+1
-  X1 = zeros(Tf, Tf+1)
-  X2 = zeros(Tf, Tf+1)
+    X1 = Any[]
+    T1 = Any[]
+    X2 = Any[]
+    T2 = Any[]
+
+    for i = 1:Tf
+        push!(X1, Int64[])
+        push!(T1, Int64[])
+        push!(X2, Int64[])
+        push!(T2, Int64[])
+    end
   #flujo_local = zeros(S, A)
   #densidad_local = zeros(S, A)
   #velocidad_local_promedio = zeros(S, A)
@@ -254,8 +276,8 @@ function Modelo_2D( xin, xout, p, pin, pout, Tf::Int64 = 3600, N::Int64 = 200;
   for t = 0:Tf-1
 
     #if t > N
-        Espacio_Tiempo!(X1, C[1].carretera, t+1)
-        Espacio_Tiempo!(X2, C[2].carretera, t+1)
+        ET!(X1, T1, C[1].carretera, t+1)
+        ET!(X2, T2, C[2].carretera, t+1)
     #end
 
         CambioIzq_Der!(C[2], C[1], 2)
@@ -284,8 +306,8 @@ function Modelo_2D( xin, xout, p, pin, pout, Tf::Int64 = 3600, N::Int64 = 200;
     subplot(211)
 
     #figure(figsize=(13,13))
-    for v = 2:size(X1)[1]
-        PyPlot.plot(linspace(1/3600, Tf/3600, Tf), [x*0.0075 for x in X1[v, 1:end-1]])
+    for v = 2:length(X1)
+        PyPlot.plot([t/3600. for t in T1[v]], [x*0.0075 for x in X1[v]])
     end
 
     title("Carril 1")
@@ -296,8 +318,8 @@ function Modelo_2D( xin, xout, p, pin, pout, Tf::Int64 = 3600, N::Int64 = 200;
     subplot(212)
 
     #figure(figsize=(13, 13))
-    for v = 2:size(X2)[1]
-        PyPlot.plot(linspace(1/3600, Tf/3600, Tf), [x*0.0075 for x in X2[v, 1:end-1]])
+    for v = 2:length(X2)
+        PyPlot.plot([t/3600. for t in T2[v]], [x*0.0075 for x in X2[v]])
     end
 
     title("Carril 2")
