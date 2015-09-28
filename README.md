@@ -24,12 +24,12 @@ Un índice más detallado puede ser encontrado [aquí](https://github.com/Leonar
 
 La programación de todo este trabajó se realizó en **Julia**. 
 
-Toda los modulos escritos y que fueron utilizados se encuentran a continuación. En estos están escritas todas las funciones y tipos usados.
+Todos los modulos (paquetes) escritos y que fueron utilizados se encuentran a continuación. En estos están escritas todas las funciones y tipos usados.
 
 | Módulo              | Descripción        |
 ---|:--
-carretera1D2 | Funciones y tipos para carretera con 1 carril
-carretera2D | Funciones y tipos para carretera con 2 carriles
+[carretera1D2](https://github.com/LeonardoCastro/Tesis-Cambios-de-fase/blob/master/Escrito/carretera1D2.jl) | Funciones y tipos para carretera con 1 carril
+[carretera2D](https://github.com/LeonardoCastro/Tesis-Cambios-de-fase/blob/master/Escrito/carretera2D.jl) | Funciones y tipos para carretera con 2 carriles
 [Modelos](https://github.com/LeonardoCastro/Tesis-Cambios-de-fase/blob/master/Escrito/Modelos.jl) | Funciones para las simulaciones en el capítulo 3
 
 
